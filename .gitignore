@@ -1,0 +1,45 @@
+# Environment variables
+.env
+.env.local
+.env.production
+.env.prod
+
+# Django
+*.pyc
+__pycache__/
+db.sqlite3
+media/
+staticfiles/
+
+# Virtual environment
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Coverage
+.coverage
+htmlcov/
+
+# Data directories
+data/log/*.log
+data/media/*
+data/static/*
+!data/log/.gitkeep
+!data/media/.gitkeep
+!data/static/.gitkeep
+
+# Temporary files
+temp_backup/
