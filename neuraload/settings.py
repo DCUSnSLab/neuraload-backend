@@ -1,7 +1,6 @@
 import os
 import sys
 from pathlib import Path
-from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -10,12 +9,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-your-secret-key-here')
+# 시크릿 키를 파일에서 읽기 (DCUCODE 스타일)
+secret_key_file = '/data/config/secret.key'
+if os.path.exists(secret_key_file):
+    with open(secret_key_file, 'r') as f:
+        SECRET_KEY = f.read().strip()
+else:
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-neuraload-development-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=True, cast=bool)
+DEBUG = os.environ.get('NEURALOAD_ENV', 'production') == 'development'
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lambda x: x.split(','))
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
 # Application definition
 DJANGO_APPS = [
@@ -78,11 +83,11 @@ WSGI_APPLICATION = 'neuraload.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME', default='neuraload_db'),
-        'USER': config('DB_USER', default='neuraload_user'),
-        'PASSWORD': config('DB_PASSWORD', default='neuraload_password'),
-        'HOST': config('DB_HOST', default='localhost'),
-        'PORT': config('DB_PORT', default='5432'),
+        'NAME': os.environ.get('DB_NAME', 'neuraload_db'),
+        'USER': os.environ.get('DB_USER', 'neuraload_user'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'neuraload_password'),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
 
@@ -150,6 +155,13 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+# WhiteNoise 설정 (Nginx 없이 정적 파일 서빙)
+if not DEBUG:
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    
+    # WhiteNoise 미들웨어 추가
+    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+
 # Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -157,7 +169,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Logging
+# Logging (DCUCODE 스타일)
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -165,7 +177,7 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs', 'neuraload.log'),
+            'filename': '/data/log/django.log',
         },
         'console': {
             'level': 'DEBUG',
@@ -178,5 +190,5 @@ LOGGING = {
     },
 }
 
-# Create logs directory if it doesn't exist
-os.makedirs(os.path.join(BASE_DIR, 'logs'), exist_ok=True)
+# 로그 디렉토리 생성 (컸테이너에서 사용)
+os.makedirs('/data/log', exist_ok=True)

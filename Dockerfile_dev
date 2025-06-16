@@ -1,6 +1,6 @@
 FROM python:3.11-alpine3.18
 
-ENV NEURALOAD_ENV production
+ENV NEURALOAD_ENV development
 
 ADD . /app
 WORKDIR /app

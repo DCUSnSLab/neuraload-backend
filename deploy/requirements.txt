@@ -1,9 +1,27 @@
+# Core Django
 Django==4.2.7
 djangorestframework==3.14.0
 django-cors-headers==4.3.1
-psycopg2-binary==2.9.7
 python-decouple==3.8
 django-filter==23.3
 djangorestframework-simplejwt==5.3.0
+
+# Database
+psycopg2-binary==2.9.7
+
+# Production server
 gunicorn==21.2.0
-dj-database-url==2.1.0
+supervisor==4.2.5
+
+# Utilities
+requests==2.31.0
+pillow==10.1.0
+redis==5.0.1
+celery==5.3.4
+
+# System monitoring
+psutil==5.9.6
+
+# Development (optional)
+coverage==7.3.2
+flake8==6.1.0
