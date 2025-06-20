@@ -224,15 +224,4 @@ Authorization: Bearer {access_token}
 - 잘못된 토큰으로 요청
 - 중복 디바이스 ID 등록
 - 존재하지 않는 리소스 조회
-- 권한 없는 데이터 접근
-
----
-
-## 🌟 DCUCODE 스타일 특징
-
-✅ **일관된 응답 형식**: success, message, data 구조
-✅ **명확한 에러 처리**: try-catch로 모든 예외 처리
-✅ **체계적인 파일 구조**: apps 폴더로 앱 분리
-✅ **재사용 가능한 utils**: response, permissions 공통화
-✅ **명확한 네이밍**: 직관적인 함수명과 변수명
-✅ **풍부한 문서화**: 주석과 독스트링 포함
+- 권한 없는 
