@@ -25,3 +25,5 @@ psutil==5.9.6
 # Development (optional)
 coverage==7.3.2
 flake8==6.1.0
+
+whitenoise>=6.6
