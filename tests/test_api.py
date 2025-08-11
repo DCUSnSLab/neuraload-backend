@@ -2,7 +2,7 @@ from django.test import TestCase
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.contrib.auth import get_user_model
-from vehicle.models import Device, UserDeviceLink
+from apps.devices.models import Device, UserDeviceLink
 
 User = get_user_model()
 
@@ -15,7 +15,7 @@ class UserAPITestCase(APITestCase):
             'password': 'testpass123',
             'phone_number': '01012345678'
         }
-        response = self.client.post('/api/account/register/', data)
+        response = self.client.post('/api/users/register/', data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(User.objects.filter(email='test@example.com').exists())
 
@@ -30,7 +30,7 @@ class UserAPITestCase(APITestCase):
             'email': 'test@example.com',
             'password': 'testpass123'
         }
-        response = self.client.post('/api/account/login/', data)
+        response = self.client.post('/api/users/login/', data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('tokens', response.data)
 
@@ -50,6 +50,6 @@ class DeviceAPITestCase(APITestCase):
             'max_load_capacity': 1.0,
             'device_unique_id': '#test123456789'
         }
-        response = self.client.post('/api/vehicles/', data)
+        response = self.client.post('/api/devices/', data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(Device.objects.filter(device_unique_id='#test123456789').exists())

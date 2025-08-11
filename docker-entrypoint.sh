@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
 echo "🚀 NeuraLoad Backend Starting..."
@@ -6,7 +6,7 @@ echo "🚀 NeuraLoad Backend Starting..."
 # PostgreSQL 연결 대기
 echo "⏳ Waiting for PostgreSQL..."
 while ! nc -z $DB_HOST $DB_PORT; do
-  sleep 0.1
+  sleep 1
 done
 echo "✅ PostgreSQL started"
 
@@ -19,20 +19,27 @@ python manage.py migrate --noinput
 echo "📁 Collecting static files..."
 python manage.py collectstatic --noinput
 
-# 슈퍼유저 생성 (환경변수가 있는 경우)
-if [ "$DJANGO_SUPERUSER_USERNAME" ] && [ "$DJANGO_SUPERUSER_EMAIL" ] && [ "$DJANGO_SUPERUSER_PASSWORD" ]; then
-    echo "👤 Creating superuser..."
-    python manage.py shell -c "
+# 기본 슈퍼유저 생성
+echo "👤 Creating default superuser..."
+python -c "
+import os
+import django
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'neuraload.settings')
+django.setup()
+
 from apps.users.models import User
-if not User.objects.filter(username='$DJANGO_SUPERUSER_USERNAME').exists():
-    User.objects.create_superuser('$DJANGO_SUPERUSER_USERNAME', '$DJANGO_SUPERUSER_EMAIL', '$DJANGO_SUPERUSER_PASSWORD')
-    print('Superuser created successfully')
+if not User.objects.filter(email='admin@neuraload.com').exists():
+    User.objects.create_superuser(
+        username='admin',
+        email='admin@neuraload.com', 
+        password='admin123456'
+    )
+    print('Default superuser created: admin@neuraload.com / admin123456')
 else:
-    print('Superuser already exists')
+    print('Default superuser already exists')
 "
-fi
 
 echo "✅ NeuraLoad Backend Ready!"
 
-# 전달된 명령어 실행
-exec "$@"
+# Gunicorn으로 서버 시작
+exec gunicorn neuraload.wsgi:application --bind 0.0.0.0:8000 --workers 3

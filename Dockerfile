@@ -21,7 +21,7 @@ RUN apk add --update --no-cache \
     freetype-dev
 
 # Python 의존성 설치
-RUN pip install --no-cache-dir -r /app/deploy/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
 # 빌드 의존성 제거 (이미지 크기 최적화)
 RUN apk del build-base --purge
@@ -29,5 +29,5 @@ RUN apk del build-base --purge
 # 헬스체크
 HEALTHCHECK --interval=5s --retries=3 CMD python /app/deploy/health_check.py
 
-# 엔트리포인트 설정
-ENTRYPOINT ["/bin/sh", "/app/deploy/entrypoint.sh"]
+# 엔트리포인트 설정  
+ENTRYPOINT ["/bin/sh", "/app/docker-entrypoint.sh"]

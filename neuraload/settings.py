@@ -1,6 +1,7 @@
 import os
 import sys
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -9,7 +10,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# 시크릿 키를 파일에서 읽기 (DCUCODE 스타일)
 secret_key_file = '/data/config/secret.key'
 if os.path.exists(secret_key_file):
     with open(secret_key_file, 'r') as f:
@@ -18,9 +18,9 @@ else:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-neuraload-development-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('NEURALOAD_ENV', 'production') == 'development'
+DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*').split(',')
 
 # Application definition
 DJANGO_APPS = [
@@ -45,6 +45,8 @@ LOCAL_APPS = [
     'apps.trips',
     'apps.sensors',
 ]
+
+# 레거시 앱들 제거됨: account, vehicle, driving, load_log
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
@@ -83,11 +85,11 @@ WSGI_APPLICATION = 'neuraload.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME', 'neuraload_db'),
-        'USER': os.environ.get('DB_USER', 'neuraload_user'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'neuraload_password'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
-        'PORT': os.environ.get('DB_PORT', '5432'),
+        'NAME': config('DB_NAME', default='neuraload_db'),
+        'USER': config('DB_USER', default='neuraload_user'),
+        'PASSWORD': config('DB_PASSWORD', default='neuraload_password'),
+        'HOST': config('DB_HOST', default='localhost'),
+        'PORT': config('DB_PORT', default='5432'),
     }
 }
 
@@ -169,26 +171,51 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Logging (DCUCODE 스타일)
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
+# Logging 
+if DEBUG:
+    # 개발 환경: 로컬 디렉토리에 로그 저장
+    LOG_DIR = os.path.join(BASE_DIR, 'logs')
+    os.makedirs(LOG_DIR, exist_ok=True)
+    
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'file': {
+                'level': 'INFO',
+                'class': 'logging.FileHandler',
+                'filename': os.path.join(LOG_DIR, 'django.log'),
+            },
+            'console': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+            },
+        },
+        'root': {
+            'handlers': ['console', 'file'],
             'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': '/data/log/django.log',
         },
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
+    }
+else:
+    # 프로덕션 환경: 기존 /data/log 사용
+    os.makedirs('/data/log', exist_ok=True)
+    
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'file': {
+                'level': 'INFO',
+                'class': 'logging.FileHandler',
+                'filename': '/data/log/django.log',
+            },
+            'console': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+            },
         },
-    },
-    'root': {
-        'handlers': ['console', 'file'],
-        'level': 'INFO',
-    },
-}
-
-# 로그 디렉토리 생성 (컸테이너에서 사용)
-os.makedirs('/data/log', exist_ok=True)
+        'root': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+        },
+    }

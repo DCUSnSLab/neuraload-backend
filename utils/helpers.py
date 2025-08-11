@@ -41,5 +41,5 @@ def parse_timestamp(timestamp_str):
 
 def validate_device_permission(user, device):
     """Check if user has permission to access device"""
-    from vehicle.models import UserDeviceLink
+    from apps.devices.models import UserDeviceLink
     return UserDeviceLink.objects.filter(user=user, device=device).exists()
